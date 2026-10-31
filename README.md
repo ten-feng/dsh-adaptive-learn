@@ -3,7 +3,7 @@
 DSH 的「自适应学习」插件：遇到没有现成材料的问题时，先探测本机能力，再把**轻任务放本地、重任务放云端**，把结论写进**两段式知识库**，回喂原任务，确认后再升入正式知识库。
 
 - 不调用任何其他 DSH 插件：网页抓取、文本提取、HTTP、知识库全部由本包自己实现。
-- `dependencies` 为空；本地推理库只放在 `optionalDependencies`，缺了也能正常工作。
+- `dependencies` 为空；本地推理引擎不进运行时依赖，缺了也能正常工作（按需补装，见下文）。
 - 启动不校验密钥；没有密钥、没有 GPU 时插件照常加载，需要时返回 `userActionRequired` 让模型转述。
 
 ## 安装
@@ -110,19 +110,28 @@ llama.cpp 官方 `llama-mtmd-cli`：它是独立二进制，属于**运行时探
 
 ### 安装步骤（可复现）
 
+本地推理引擎**不随插件安装**：装上会让每次 `dsh plugin add` 下载近 900MB 原生二进制，而且
+pnpm 会因这些包的后置脚本报 `ERR_PNPM_IGNORED_BUILDS`，让 DSH 把一次成功的安装标成失败。
+需要本地推理时，往 profile 里补装（Node 解析会从插件目录向上找到它们）：
+
 ```bash
-# 1) OCR：PaddleOCR（纯 JS，最省事）
-pnpm add --save-optional ppu-paddle-ocr onnxruntime-node
-# 模型下载到 <数据目录>/models/paddleocr/{det,rec}.onnx + dict.txt
+cd ~/.dsh/profiles/<profile>
+pnpm add ppu-paddle-ocr onnxruntime-node        # OCR：PaddleOCR（纯 JS，最省事）
+#   模型下载到 <数据目录>/models/paddleocr/{det,rec}.onnx + dict.txt
+#   systeminformation 可选：nvidia-smi 探测失败时的回退
+```
 
-# 2) OCR：HunyuanOCR（可选，需 llama.cpp 多模态 CLI）
-#    https://github.com/ggml-org/llama.cpp/releases 下载 win 构建，
-#    解压到 <数据目录>/llamacpp/，权重放 <数据目录>/models/hunyuanocr/
+```bash
+# OCR：HunyuanOCR（可选，需 llama.cpp 多模态 CLI）
+#   https://github.com/ggml-org/llama.cpp/releases 下载 win 构建，
+#   解压到 <数据目录>/llamacpp/，权重放 <数据目录>/models/hunyuanocr/
 
-# 3) ASR：faster-whisper（本机用独立 venv，避免污染 DSH 运行时）
+# ASR：faster-whisper（本机用独立 venv，避免污染 DSH 运行时）
 python -m venv <数据目录>/pyenv
 <数据目录>/pyenv/Scripts/python.exe -m pip install faster-whisper "huggingface-hub<1.0" "av==16.0.1"
 ```
+
+不装这些也能用：插件会返回 `engine_missing` / `model_downloading`，并按配置降级到云端。
 
 > 版本坑：`av>=19` 删掉了 `metadata_errors` 参数，faster-whisper 1.2.1 会直接抛
 > `open() got an unexpected keyword argument 'metadata_errors'`；`huggingface-hub>=1.0`

@@ -22,19 +22,17 @@
     "@deepseek-ai/cordis": "^4.0.1-rc.1",
     "@deepseek-ai/dsh-tools": "*"
   },
-  "optionalDependencies": {
-    "node-llama-cpp": "*",
-    "onnxruntime-node": "^1.31.1",
-    "ppu-paddle-ocr": "^6.6.1",
-    "systeminformation": "^5.33.18"
-  },
   "dependencies": {},
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.5",
     "@deepseek-ai/schemastery": "^3.18.5",
     "@types/node": "^22.10.2",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "node-llama-cpp": "^3.22.2",
+    "ppu-paddle-ocr": "^6.6.1",
+    "onnxruntime-node": "^1.31.1",
+    "systeminformation": "^5.33.18"
   },
   "dsh": {
     "bundle": {
