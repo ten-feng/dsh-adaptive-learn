@@ -1,0 +1,3 @@
+- insert:
+    - id: adaptive-learn
+      name: 'dsh-adaptive-learn'

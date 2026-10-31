@@ -1,0 +1,74 @@
+{
+  "name": "dsh-adaptive-learn",
+  "version": "0.1.0",
+  "description": "DSH 自适应学习插件：探测本地硬件，轻任务本地推理、重任务云端，结论写入两段式知识库并回喂原任务。",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "test": "vitest run tests",
+    "smoke": "node scripts/smoke-local.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1-rc.1",
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "optionalDependencies": {
+    "node-llama-cpp": "*",
+    "onnxruntime-node": "^1.31.1",
+    "ppu-paddle-ocr": "^6.6.1",
+    "systeminformation": "^5.33.18"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/schemastery": "^3.18.5",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib",
+    "src",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "adaptive-learning",
+    "local-inference",
+    "ocr",
+    "asr",
+    "knowledge-base"
+  ],
+  "author": "ten-feng",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ten-feng/dsh-adaptive-learn.git"
+  },
+  "homepage": "https://github.com/ten-feng/dsh-adaptive-learn#readme",
+  "bugs": {
+    "url": "https://github.com/ten-feng/dsh-adaptive-learn/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

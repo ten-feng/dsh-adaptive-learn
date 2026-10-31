@@ -1,0 +1,15 @@
+# pnpm 11 keeps pnpm-specific settings here.
+# The DSH peer packages are injected by the host at runtime; some of their own
+# peers are not published, so peers must never be auto-installed.
+autoInstallPeers: false
+strictPeerDependencies: false
+# Packages allowed to run their install scripts: the test runner and the two
+# optional local-inference engines (they fetch their native binaries here).
+onlyBuiltDependencies:
+  - esbuild
+  - node-llama-cpp
+  - onnxruntime-node
+  - ppu-paddle-ocr
+# `pnpm build` / `pnpm test` must not shell out to an install first: the DSH
+# peers are not installable here, and node_modules is already complete.
+verifyDepsBeforeRun: false

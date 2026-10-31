@@ -1,0 +1,16 @@
+# 依赖与构建产物之外的本地文件
+node_modules/
+output/
+temp/
+*.log
+.DS_Store
+Thumbs.db
+
+# 本地覆盖的配置（含密钥，绝不入库）
+*.local.yml
+.env
+.env.*
+
+# 编辑器
+.vscode/
+.idea/
