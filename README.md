@@ -108,28 +108,49 @@ dsh plugin --profile <profile> add https://codeload.github.com/ten-feng/dsh-adap
 （`dist/` 里搜不到 `mmproj`/`mtmd`），GGUF 视觉模型跑不起来。插件因此改为调用
 llama.cpp 官方 `llama-mtmd-cli`：它是独立二进制，属于**运行时探测**的能力，不是本包依赖。
 
-### 安装步骤（可复现）
+### 一键安装（推荐）
 
-本地推理引擎**不随插件安装**：装上会让每次 `dsh plugin add` 下载近 900MB 原生二进制，而且
-pnpm 会因这些包的后置脚本报 `ERR_PNPM_IGNORED_BUILDS`，让 DSH 把一次成功的安装标成失败。
-需要本地推理时，往 profile 里补装（Node 解析会从插件目录向上找到它们）：
+本地推理引擎**不随插件安装**：塞进依赖会让每次 `dsh plugin add` 下载近 900MB 原生二进制，
+而且 pnpm 会因后置脚本报 `ERR_PNPM_IGNORED_BUILDS`，让 DSH 把一次成功的安装标成失败。
+需要本地推理时跑安装器，它按需只装你要的那部分：
+
+```bash
+node scripts/install-local.mjs --list            # 只看当前状态
+node scripts/install-local.mjs --ocr paddle      # 约 200MB，纯 npm，最快见效
+node scripts/install-local.mjs --ocr hunyuan     # 再加 1.35GB（GGUF + llama.cpp，有 N 卡才有意义）
+node scripts/install-local.mjs --asr whisper     # 再加 296MB（Python venv）
+node scripts/install-local.mjs --all             # 全装
+```
+
+| 参数 | 说明 |
+|---|---|
+| `--ocr paddle` / `hunyuan` / `both` | 本地 OCR 引擎 |
+| `--asr whisper` | 本地语音转写（auto 找 python 建 venv） |
+| `--profile <name>` | 装进哪个 DSH profile，默认 `desktop` |
+| `--data-dir <path>` | 插件数据目录，默认 `~/.dsh/adaptive-learn` |
+| `--dry` / `--no-check` | 只看计划 / 装完不自检 |
+
+脚本做的事：① 往 profile 里 `pnpm add` 引擎包并容忍 `IGNORED_BUILDS`；
+② 从 `hf-mirror.com` 拉模型（失败自动回退官方源）；③ 建 venv 并**钉住** `av==16.0.1`、`huggingface-hub<1.0`；
+④ 用内置的一张测试图真的跑一次 OCR，通过才返回 0。
+
+```
+== 自检：本地 OCR
+   ✓ OCR 可用（local-paddleocr）：DSH 本地引擎自检
+```
+
+### 手动安装（脚本不可用时）
 
 ```bash
 cd ~/.dsh/profiles/<profile>
-pnpm add ppu-paddle-ocr onnxruntime-node        # OCR：PaddleOCR（纯 JS，最省事）
-#   模型下载到 <数据目录>/models/paddleocr/{det,rec}.onnx + dict.txt
-#   systeminformation 可选：nvidia-smi 探测失败时的回退
-```
-
-```bash
-# OCR：HunyuanOCR（可选，需 llama.cpp 多模态 CLI）
-#   https://github.com/ggml-org/llama.cpp/releases 下载 win 构建，
-#   解压到 <数据目录>/llamacpp/，权重放 <数据目录>/models/hunyuanocr/
-
-# ASR：faster-whisper（本机用独立 venv，避免污染 DSH 运行时）
-python -m venv <数据目录>/pyenv
+pnpm add ppu-paddle-ocr onnxruntime-node        # 模型下载到 <数据目录>/models/paddleocr/
+python -m venv <数据目录>/pyenv                 # faster-whisper
 <数据目录>/pyenv/Scripts/python.exe -m pip install faster-whisper "huggingface-hub<1.0" "av==16.0.1"
 ```
+
+HunyuanOCR 还需要手动放两样东西：`https://github.com/ggml-org/llama.cpp/releases` 的
+win 构建解压到 `<数据目录>/llamacpp/`，GGUF 权重（`ggml-org/HunyuanOCR-GGUF`）放
+`<数据目录>/models/hunyuanocr/`。
 
 不装这些也能用：插件会返回 `engine_missing` / `model_downloading`，并按配置降级到云端。
 

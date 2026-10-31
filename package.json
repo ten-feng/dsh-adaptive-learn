@@ -16,7 +16,8 @@
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
     "test": "vitest run tests",
-    "smoke": "node scripts/smoke-local.mjs"
+    "smoke": "node scripts/smoke-local.mjs",
+    "install-local": "node scripts/install-local.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1-rc.1",
