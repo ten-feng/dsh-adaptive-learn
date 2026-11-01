@@ -20,6 +20,8 @@ import { createAudioTool } from './tools/learn-audio.js'
 import { createFetchTool } from './tools/learn-fetch.js'
 import { createVisionTool } from './tools/learn-vision.js'
 import { WikiStore, createWikiTools } from './tools/learn-wiki.js'
+import { SettingsStore } from './settings.js'
+import { API_PREFIX, createApiHandler, type ApiDeps } from './api.js'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 
 export const name = 'adaptive-learn'
@@ -330,6 +332,9 @@ export function apply(
   const config = runtimeConfig(rawConfig)
   const dataDir = resolveDataDir(ctx)
 
+  // Overlay the panel's saved values (if any) on top of the schema/patch config.
+  const settingsStore = new SettingsStore(join(dataDir, 'settings.json'), config)
+
   const cache = new CapabilityCache({ file: join(dataDir, 'capability.json') })
 
   // One store per resolved root: a process may serve several workspaces.
@@ -372,6 +377,7 @@ export function apply(
   for (const tool of createLearnTools(deps)) register(tool)
   installTrigger(ctx, config)
   installSkill(ctx)
+  installSettingsApi(ctx, { store: settingsStore, cache, modelDir: deps.modelDir, dataDir })
 
   const runtime: LearnRuntime = {
     config,
@@ -389,6 +395,42 @@ export function apply(
 }
 
 const lastInjected = new Map<string, number>()
+
+/**
+ * Mount the settings panel's JSON API on the host webServer.
+ *
+ * Optional: a headless profile without a web UI simply never calls this, and
+ * the plugin keeps working with its schema/patch config.
+ */
+export function installSettingsApi(ctx: PluginContext, deps: Omit<ApiDeps, 'store'> & { store: SettingsStore }): void {
+  if (typeof ctx.inject !== 'function') return
+  try {
+    ctx.inject(['webServer'], (scope) => {
+      try {
+        const webServer = (scope as { reflect?: { get?: (name: string) => unknown } }).reflect?.get?.('webServer') as
+          | { register?: (entry: { kind: string; path: string; handler: (req: unknown, res: unknown) => unknown }) => unknown }
+          | undefined
+        if (!webServer?.register) return
+        const handler = createApiHandler(deps)
+        const install = () =>
+          webServer.register!({
+            kind: 'prefix',
+            path: API_PREFIX,
+            handler: (req: unknown, res: unknown) => handler(req as { method?: string; url?: string }, res),
+          })
+        if (typeof ctx.effect === 'function') {
+          ctx.effect(install, 'dsh-adaptive-learn: settings API')
+        } else {
+          install()
+        }
+      } catch {
+        // A host without a mountable webServer must not fail the plugin.
+      }
+    })
+  } catch {
+    // ignore
+  }
+}
 
 /** Re-apply one trigger decision to the batch the downstream waterfall returned. */
 export function applyDecision(messages: unknown[], decision: TriggerDecision): unknown[] {

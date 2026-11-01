@@ -25,6 +25,8 @@ export interface AdaptiveLearnConfig {
     autoCooldownMinutes: number;
     /** Reject a commit whose staged entry has no sources. */
     wikiCommitRequiresSource: boolean;
+    /** Allow fetching loopback/intranet addresses (SSRF guard off). */
+    allowPrivateUrls: boolean;
     /** Routing preference. */
     routePolicy: RoutePolicy;
     /** Master switch for every local engine. */
@@ -57,12 +59,13 @@ export declare const Config: Schema<Schemastery.ObjectS<NoInfer<{
     autoScoreThreshold: Schema<number, number, "defined">;
     autoCooldownMinutes: Schema<number, number, "defined">;
     wikiCommitRequiresSource: Schema<boolean, boolean, "defined">;
+    allowPrivateUrls: Schema<boolean, boolean, "defined">;
     routePolicy: Schema<"auto" | "local-first" | "cloud-first", "auto" | "local-first" | "cloud-first", "defined">;
     localEnabled: Schema<boolean, boolean, "defined">;
     ocrMinVramMB: Schema<number, number, "defined">;
     asrMinVramMB: Schema<number, number, "defined">;
     audioLocalMaxMinutes: Schema<number, number, "defined">;
-    localAsrModel: Schema<"auto" | "small" | "medium" | "large-v3-turbo", "auto" | "small" | "medium" | "large-v3-turbo", "defined">;
+    localAsrModel: Schema<"small" | "medium" | "large-v3-turbo" | "auto", "small" | "medium" | "large-v3-turbo" | "auto", "defined">;
     localOcrEngine: Schema<"auto" | "hunyuanocr" | "paddleocr", "auto" | "hunyuanocr" | "paddleocr", "defined">;
     visionBaseUrl: Schema<string, string, "defined">;
     visionModel: Schema<string, string, "defined">;
@@ -78,12 +81,13 @@ export declare const Config: Schema<Schemastery.ObjectS<NoInfer<{
     autoScoreThreshold: Schema<number, number, "defined">;
     autoCooldownMinutes: Schema<number, number, "defined">;
     wikiCommitRequiresSource: Schema<boolean, boolean, "defined">;
+    allowPrivateUrls: Schema<boolean, boolean, "defined">;
     routePolicy: Schema<"auto" | "local-first" | "cloud-first", "auto" | "local-first" | "cloud-first", "defined">;
     localEnabled: Schema<boolean, boolean, "defined">;
     ocrMinVramMB: Schema<number, number, "defined">;
     asrMinVramMB: Schema<number, number, "defined">;
     audioLocalMaxMinutes: Schema<number, number, "defined">;
-    localAsrModel: Schema<"auto" | "small" | "medium" | "large-v3-turbo", "auto" | "small" | "medium" | "large-v3-turbo", "defined">;
+    localAsrModel: Schema<"small" | "medium" | "large-v3-turbo" | "auto", "small" | "medium" | "large-v3-turbo" | "auto", "defined">;
     localOcrEngine: Schema<"auto" | "hunyuanocr" | "paddleocr", "auto" | "hunyuanocr" | "paddleocr", "defined">;
     visionBaseUrl: Schema<string, string, "defined">;
     visionModel: Schema<string, string, "defined">;

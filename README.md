@@ -43,11 +43,24 @@ dsh plugin --profile <profile> add https://codeload.github.com/ten-feng/dsh-adap
 
 密钥字段在 Schema 里声明为 `role('secret')`，插件不会打印它，也不会写进日志。
 
+## 设置面板
+
+装好并重启后，在 **设置 → 自学**（`settings.section`）里可以：
+
+- 看当前状态：GPU 名称 / 空闲显存、本地 OCR 与转写是否就绪、三个本地引擎装没装
+- 改云端视觉与音频的 Base URL、模型、API Key（输入框是密码型，已保存的只显示 `sk-w4••••9f2d` 这种掩码）
+- 「重新探测」：立刻重跑一次硬件探测，不用等 10 秒去重窗口
+- 「保存」：写入 `<数据目录>/settings.json`，**立即生效**（改完不用重启）
+
+> 面板保存的值叠加在 schema/patch 配置之上，优先级：`settings.json` > `cordis.patch.yml` > Schema 默认值。
+> 前提是 profile 没把设置页关掉：`cordis.patch.yml` 里 `- id: ui-settings` 的 `enabled` 必须是 `true`（默认就是）。
+> 面板不可用时，改 `cordis.patch.yml` 仍然有效。
+
 ## 六个工具
 
 | 工具 | 作用 | 说明 |
 |---|---|---|
-| `self_learn_fetch` | 读网页正文 | 内置 fetch + 正则提取，去脚本/导航/页脚，嗅探 GBK/UTF-8，按 `maxFetchChars` 截断 |
+| `self_learn_fetch` | 读网页正文 | 内置 fetch + 正则提取，去脚本/导航/页脚，嗅探 GBK/UTF-8，按 `maxFetchChars` 截断；**默认拒内网/回环地址**（可用 `allowPrivateUrls` 打开） |
 | `self_learn_vision` | 读图片/视频 | 内部自动选本地 OCR 或云端视觉模型；密钥缺失返回 `vision_api_key_missing` + `freeOptions` |
 | `self_learn_audio` | 转写音频 | 短音频可本地 faster-whisper，长音频直接云端；不本地重编码 |
 | `self_learn_wiki_recall` | 查知识库 | **只查 `pages/`**，staged 草稿不参与召回 |

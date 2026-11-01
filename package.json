@@ -10,6 +10,7 @@
       "types": "./lib/types/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./client": "./client.js",
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -35,14 +36,10 @@
     "onnxruntime-node": "^1.31.1",
     "systeminformation": "^5.33.18"
   },
-  "dsh": {
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    }
-  },
   "files": [
     "lib",
     "src",
+    "client.js",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"
@@ -69,5 +66,17 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ],
+      "platform": "web"
+    }
   }
 }

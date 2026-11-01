@@ -27,6 +27,8 @@ export interface AdaptiveLearnConfig {
   autoCooldownMinutes: number
   /** Reject a commit whose staged entry has no sources. */
   wikiCommitRequiresSource: boolean
+  /** Allow fetching loopback/intranet addresses (SSRF guard off). */
+  allowPrivateUrls: boolean
   /** Routing preference. */
   routePolicy: RoutePolicy
   /** Master switch for every local engine. */
@@ -59,6 +61,7 @@ export const DEFAULTS: AdaptiveLearnConfig = {
   autoScoreThreshold: 2,
   autoCooldownMinutes: 3,
   wikiCommitRequiresSource: true,
+  allowPrivateUrls: false,
   routePolicy: 'auto',
   localEnabled: true,
   ocrMinVramMB: 2048,
@@ -82,6 +85,7 @@ export const Config = Schema.object({
   autoScoreThreshold: Schema.number().default(2),
   autoCooldownMinutes: Schema.number().default(3),
   wikiCommitRequiresSource: Schema.boolean().default(true),
+  allowPrivateUrls: Schema.boolean().default(false),
   routePolicy: Schema.union(['auto', 'local-first', 'cloud-first'] as const).default('auto'),
   localEnabled: Schema.boolean().default(true),
   ocrMinVramMB: Schema.number().default(2048),

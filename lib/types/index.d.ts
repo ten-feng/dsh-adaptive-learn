@@ -3,6 +3,8 @@ import { CapabilityCache, type LocalCapability } from './local/capability.js';
 import { type TriggerAction, type TriggerDecision } from './local/classify.js';
 import { type LearnTool, type SessionLike, type ToolDeps } from './tools/base.js';
 import { WikiStore } from './tools/learn-wiki.js';
+import { SettingsStore } from './settings.js';
+import { type ApiDeps } from './api.js';
 export declare const name = "adaptive-learn";
 /** Tools are the only hard dependency; everything else is read opportunistically. */
 export declare const inject: string[];
@@ -139,6 +141,15 @@ export declare function createSkillProvider(document: SkillDocument): {
 export declare function installSkill(ctx: PluginContext, file?: string): void;
 /** Cordis plugin entry point. */
 export declare function apply(ctx: PluginContext, rawConfig?: Partial<AdaptiveLearnConfig>, overrides?: Partial<ToolDeps>): LearnRuntime;
+/**
+ * Mount the settings panel's JSON API on the host webServer.
+ *
+ * Optional: a headless profile without a web UI simply never calls this, and
+ * the plugin keeps working with its schema/patch config.
+ */
+export declare function installSettingsApi(ctx: PluginContext, deps: Omit<ApiDeps, 'store'> & {
+    store: SettingsStore;
+}): void;
 /** Re-apply one trigger decision to the batch the downstream waterfall returned. */
 export declare function applyDecision(messages: unknown[], decision: TriggerDecision): unknown[];
 /** Register the `agent/pre-step` trigger. Zero interference when nothing fires. */
@@ -155,12 +166,13 @@ declare const _default: {
         autoScoreThreshold: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         autoCooldownMinutes: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         wikiCommitRequiresSource: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
+        allowPrivateUrls: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
         routePolicy: import("@deepseek-ai/schemastery").default<"auto" | "local-first" | "cloud-first", "auto" | "local-first" | "cloud-first", "defined">;
         localEnabled: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
         ocrMinVramMB: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         asrMinVramMB: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         audioLocalMaxMinutes: import("@deepseek-ai/schemastery").default<number, number, "defined">;
-        localAsrModel: import("@deepseek-ai/schemastery").default<"auto" | "small" | "medium" | "large-v3-turbo", "auto" | "small" | "medium" | "large-v3-turbo", "defined">;
+        localAsrModel: import("@deepseek-ai/schemastery").default<"small" | "medium" | "large-v3-turbo" | "auto", "small" | "medium" | "large-v3-turbo" | "auto", "defined">;
         localOcrEngine: import("@deepseek-ai/schemastery").default<"auto" | "hunyuanocr" | "paddleocr", "auto" | "hunyuanocr" | "paddleocr", "defined">;
         visionBaseUrl: import("@deepseek-ai/schemastery").default<string, string, "defined">;
         visionModel: import("@deepseek-ai/schemastery").default<string, string, "defined">;
@@ -176,12 +188,13 @@ declare const _default: {
         autoScoreThreshold: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         autoCooldownMinutes: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         wikiCommitRequiresSource: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
+        allowPrivateUrls: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
         routePolicy: import("@deepseek-ai/schemastery").default<"auto" | "local-first" | "cloud-first", "auto" | "local-first" | "cloud-first", "defined">;
         localEnabled: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
         ocrMinVramMB: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         asrMinVramMB: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         audioLocalMaxMinutes: import("@deepseek-ai/schemastery").default<number, number, "defined">;
-        localAsrModel: import("@deepseek-ai/schemastery").default<"auto" | "small" | "medium" | "large-v3-turbo", "auto" | "small" | "medium" | "large-v3-turbo", "defined">;
+        localAsrModel: import("@deepseek-ai/schemastery").default<"small" | "medium" | "large-v3-turbo" | "auto", "small" | "medium" | "large-v3-turbo" | "auto", "defined">;
         localOcrEngine: import("@deepseek-ai/schemastery").default<"auto" | "hunyuanocr" | "paddleocr", "auto" | "hunyuanocr" | "paddleocr", "defined">;
         visionBaseUrl: import("@deepseek-ai/schemastery").default<string, string, "defined">;
         visionModel: import("@deepseek-ai/schemastery").default<string, string, "defined">;

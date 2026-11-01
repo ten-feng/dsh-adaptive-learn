@@ -7,6 +7,68 @@
 import { decodeBody, extractReadable, sniffCharset } from '../extract.js'
 import { jsonRender, objectSchema, type LearnTool, type ToolDeps } from './base.js'
 
+/** 私有/保留地址判定：只做字面量检查，够挡住误用与诱导访问。 */
+export function isPrivateAddress(hostname: string): boolean {
+  const host = hostname.trim().toLowerCase().replace(/^\[|\]$/g, '')
+  if (!host) return true
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) {
+    return true
+  }
+  if (host === '0.0.0.0' || host === '::' || host === '::1') return true
+
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    const [a, b] = host.split('.').map(Number) as [number, number, number, number]
+    if (a === 0 || a === 10 || a === 127) return true
+    if (a === 169 && b === 254) return true
+    if (a === 172 && b >= 16 && b <= 31) return true
+    if (a === 192 && b === 168) return true
+    if (a === 100 && b >= 64 && b <= 127) return true // CGNAT
+    if (a >= 224) return true // 组播/保留
+    return false
+  }
+
+  const v6 = host.startsWith('::ffff:') ? host.slice(7) : host
+  if (v6 !== host) return isPrivateAddress(v6)
+  if (/^(fc|fd)/.test(host)) return true // 唯一本地地址
+  if (/^fe[89ab]/.test(host)) return true // 链路本地
+  return false
+}
+
+function assertFetchable(target: string, allowPrivate: boolean): URL {
+  const parsed = new URL(target)
+  if (!/^https?:$/.test(parsed.protocol)) {
+    throw Object.assign(new Error(`不支持的协议：${parsed.protocol}`), { code: 'unsupported_url' })
+  }
+  if (!allowPrivate && isPrivateAddress(parsed.hostname)) {
+    throw Object.assign(new Error(`拒绝访问私有地址：${parsed.hostname}`), { code: 'blocked_private_address' })
+  }
+  return parsed
+}
+
+/** 手动跟随重定向，每一跳都重新校验，避免公网 302 到内网。 */
+async function fetchWithGuard(
+  url: string,
+  fetchImpl: typeof fetch,
+  allowPrivate: boolean,
+): Promise<{ response: Response; finalUrl: string }> {
+  let current = url
+  for (let hop = 0; hop < 5; hop += 1) {
+    assertFetchable(current, allowPrivate)
+    const response = await fetchImpl(current, {
+      redirect: 'manual',
+      headers: { 'user-agent': 'dsh-adaptive-learn/0.1 (+https://deepseek.com)' },
+    })
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location')
+      if (!location) return { response, finalUrl: current }
+      current = new URL(location, current).toString()
+      continue
+    }
+    return { response, finalUrl: current }
+  }
+  throw Object.assign(new Error('重定向超过 5 次'), { code: 'too_many_redirects' })
+}
+
 export function createFetchTool(deps: ToolDeps): LearnTool {
   const fetchImpl = deps.fetchImpl ?? globalThis.fetch
   return {
@@ -40,12 +102,24 @@ export function createFetchTool(deps: ToolDeps): LearnTool {
       }
 
       let response: Response
+      let finalUrl = url
       try {
-        response = await fetchImpl(url, {
-          redirect: 'follow',
-          headers: { 'user-agent': 'dsh-adaptive-learn/0.1 (+https://deepseek.com)' },
-        })
+        const result = await fetchWithGuard(url, fetchImpl, deps.config.allowPrivateUrls === true)
+        response = result.response
+        finalUrl = result.finalUrl
       } catch (error) {
+        const code = (error as { code?: string })?.code
+        if (code === 'blocked_private_address') {
+          return {
+            available: false,
+            url,
+            reason: 'blocked_private_address',
+            message: `拒绝访问内网/回环地址（${(error as Error).message}）。如确需访问，请在插件配置里把 allowPrivateUrls 设为 true。`,
+          }
+        }
+        if (code === 'unsupported_url') {
+          return { available: false, url, reason: 'unsupported_url', message: (error as Error).message }
+        }
         return {
           available: false,
           url,
@@ -55,14 +129,19 @@ export function createFetchTool(deps: ToolDeps): LearnTool {
       }
 
       if (!response.ok) {
-        return { available: false, url, reason: 'http_error', message: `HTTP ${response.status} ${response.statusText}` }
+        return {
+          available: false,
+          url: finalUrl,
+          reason: 'http_error',
+          message: `HTTP ${response.status} ${response.statusText}`,
+        }
       }
 
       const contentType = response.headers.get('content-type') ?? ''
       if (contentType && !/text\/|html|xml|json/i.test(contentType)) {
         return {
           available: false,
-          url,
+          url: finalUrl,
           reason: 'unsupported_content',
           message: `该地址返回 ${contentType}，不是文本页面，无法内联提取。`,
         }
@@ -76,7 +155,7 @@ export function createFetchTool(deps: ToolDeps): LearnTool {
 
       return {
         available: true,
-        url,
+        url: finalUrl,
         title: page.title,
         text: page.text,
         totalChars: page.totalChars,
