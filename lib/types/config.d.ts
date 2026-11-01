@@ -19,6 +19,8 @@ export interface AdaptiveLearnConfig {
     knowledgeDir: string;
     /** Upper bound for text extracted from one page. */
     maxFetchChars: number;
+    /** Upper bound for a transcript handed back to the model. */
+    maxAudioChars: number;
     /** Auto-trigger score required to inject the protocol. */
     autoScoreThreshold: number;
     /** Per-session cooldown between two auto injections. */
@@ -56,6 +58,7 @@ export declare const Config: Schema<Schemastery.ObjectS<NoInfer<{
     explicitPrefixes: Schema<string[], string[], "defined">;
     knowledgeDir: Schema<string, string, "defined">;
     maxFetchChars: Schema<number, number, "defined">;
+    maxAudioChars: Schema<number, number, "defined">;
     autoScoreThreshold: Schema<number, number, "defined">;
     autoCooldownMinutes: Schema<number, number, "defined">;
     wikiCommitRequiresSource: Schema<boolean, boolean, "defined">;
@@ -78,6 +81,7 @@ export declare const Config: Schema<Schemastery.ObjectS<NoInfer<{
     explicitPrefixes: Schema<string[], string[], "defined">;
     knowledgeDir: Schema<string, string, "defined">;
     maxFetchChars: Schema<number, number, "defined">;
+    maxAudioChars: Schema<number, number, "defined">;
     autoScoreThreshold: Schema<number, number, "defined">;
     autoCooldownMinutes: Schema<number, number, "defined">;
     wikiCommitRequiresSource: Schema<boolean, boolean, "defined">;

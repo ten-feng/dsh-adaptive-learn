@@ -65,6 +65,20 @@ export function estimateDurationSeconds(sizeBytes: number): number {
   return (sizeBytes * 8) / 128_000
 }
 
+/**
+ * Cap the transcript before it reaches the model.
+ *
+ * A one-hour recording can be tens of thousands of characters; unlike
+ * `self_learn_fetch` there was no ceiling here, so long audio could crowd out
+ * the rest of the conversation. Truncation is reported, never silent.
+ */
+export function capText(text: string, maxChars: number): { text: string; totalChars: number; truncated: boolean } {
+  const limit = Number.isFinite(maxChars) && maxChars > 0 ? maxChars : 8000
+  const totalChars = text.length
+  if (totalChars <= limit) return { text, totalChars, truncated: false }
+  return { text: text.slice(0, limit), totalChars, truncated: true }
+}
+
 async function loadAudio(
   source: string,
   sourceType: string,
@@ -108,6 +122,8 @@ export function createAudioTool(deps: ToolDeps): LearnTool {
           engine: { type: 'string' },
           tier: { type: 'string' },
           text: { type: 'string' },
+          totalChars: { type: 'number' },
+          truncated: { type: 'boolean' },
           language: { type: 'string' },
           model: { type: 'string' },
           durationSeconds: { type: 'number' },
@@ -209,7 +225,7 @@ export function createAudioTool(deps: ToolDeps): LearnTool {
             route: 'local',
             engine: local.engine,
             tier,
-            text: local.text,
+            ...capText(local.text, deps.config.maxAudioChars),
             language: local.language,
             durationSeconds,
             sizeBytes: loaded.sizeBytes,
@@ -275,7 +291,7 @@ export function createAudioTool(deps: ToolDeps): LearnTool {
         tier,
         durationSeconds,
         sizeBytes: loaded.sizeBytes,
-        text: result.data.text ?? '',
+        ...capText(result.data.text ?? '', deps.config.maxAudioChars),
         language,
       }
     },

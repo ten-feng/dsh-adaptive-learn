@@ -21,6 +21,8 @@ export interface AdaptiveLearnConfig {
   knowledgeDir: string
   /** Upper bound for text extracted from one page. */
   maxFetchChars: number
+  /** Upper bound for a transcript handed back to the model. */
+  maxAudioChars: number
   /** Auto-trigger score required to inject the protocol. */
   autoScoreThreshold: number
   /** Per-session cooldown between two auto injections. */
@@ -58,6 +60,7 @@ export const DEFAULTS: AdaptiveLearnConfig = {
   explicitPrefixes: ['/learn'],
   knowledgeDir: '_knowledge',
   maxFetchChars: 6000,
+  maxAudioChars: 8000,
   autoScoreThreshold: 2,
   autoCooldownMinutes: 3,
   wikiCommitRequiresSource: true,
@@ -82,6 +85,7 @@ export const Config = Schema.object({
   explicitPrefixes: Schema.array(Schema.string()).default(['/learn']),
   knowledgeDir: Schema.string().default('_knowledge'),
   maxFetchChars: Schema.number().default(6000),
+  maxAudioChars: Schema.number().default(8000),
   autoScoreThreshold: Schema.number().default(2),
   autoCooldownMinutes: Schema.number().default(3),
   wikiCommitRequiresSource: Schema.boolean().default(true),

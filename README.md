@@ -223,6 +223,8 @@ win 构建解压到 `<数据目录>/llamacpp/`，GGUF 权重（`ggml-org/Hunyuan
 ## 音频限制
 
 - 单个文件上限 50MB、1 小时；超过直接返回 `audio_too_large` / `audio_too_long`，请先裁剪。
+- **转写文本上限 `maxAudioChars`（默认 8000 字）**：超出时截断并返回 `truncated: true` +
+  `totalChars`，避免一小时的会议录音把上下文挤爆。和 `maxFetchChars` 对称。
 - 不本地重转码：文件原样交给引擎；本地引擎需要路径时只写临时文件。
 - 时长优先读 WAV 头，其他格式按 128kbps 估算；因此超高码率的长音频可能被提前判为 `heavy`。
 

@@ -163,6 +163,7 @@ declare const _default: {
         explicitPrefixes: import("@deepseek-ai/schemastery").default<string[], string[], "defined">;
         knowledgeDir: import("@deepseek-ai/schemastery").default<string, string, "defined">;
         maxFetchChars: import("@deepseek-ai/schemastery").default<number, number, "defined">;
+        maxAudioChars: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         autoScoreThreshold: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         autoCooldownMinutes: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         wikiCommitRequiresSource: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
@@ -185,6 +186,7 @@ declare const _default: {
         explicitPrefixes: import("@deepseek-ai/schemastery").default<string[], string[], "defined">;
         knowledgeDir: import("@deepseek-ai/schemastery").default<string, string, "defined">;
         maxFetchChars: import("@deepseek-ai/schemastery").default<number, number, "defined">;
+        maxAudioChars: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         autoScoreThreshold: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         autoCooldownMinutes: import("@deepseek-ai/schemastery").default<number, number, "defined">;
         wikiCommitRequiresSource: import("@deepseek-ai/schemastery").default<boolean, boolean, "defined">;
