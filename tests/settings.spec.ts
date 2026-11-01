@@ -25,6 +25,15 @@ describe('settings overlay', () => {
     expect(sanitizePatch({ routePolicy: 'nonsense' })).toEqual({})
   })
 
+  it('accepts numeric caps from the panel and clamps junk', () => {
+    expect(sanitizePatch({ maxAudioChars: 3000 })).toEqual({ maxAudioChars: 3000 })
+    expect(sanitizePatch({ maxAudioChars: '3000' })).toEqual({ maxAudioChars: 3000 })
+    expect(sanitizePatch({ maxFetchChars: 10 })).toEqual({ maxFetchChars: 500 }) // 下限
+    expect(sanitizePatch({ maxFetchChars: 9_999_999 })).toEqual({ maxFetchChars: 200_000 }) // 上限
+    expect(sanitizePatch({ maxAudioChars: 'abc' })).toEqual({}) // 脏值丢弃
+    expect(sanitizePatch({ maxAudioChars: Number.NaN })).toEqual({})
+  })
+
   it('masks secrets and never returns them in clear text', () => {
     expect(maskSecret('')).toBe('')
     expect(maskSecret('short')).toBe('••••')

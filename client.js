@@ -85,8 +85,11 @@ window.__ModuleLoader__.load({
 
       const save = async () => {
         const body = {}
+        const numeric = ['maxFetchChars', 'maxAudioChars']
         for (const key of Object.keys(draft)) {
-          if (draft[key] !== '' && draft[key] !== undefined) body[key] = draft[key]
+          const raw = draft[key]
+          if (raw === '' || raw === undefined) continue
+          body[key] = numeric.includes(key) ? Number(String(raw).trim()) : raw
         }
         if (Object.keys(body).length === 0) {
           setStatus('没有改动')
@@ -162,6 +165,8 @@ window.__ModuleLoader__.load({
           change,
           'password',
         ),
+        field('maxFetchChars', '网页正文上限（字）', value('maxFetchChars'), change, 'number'),
+        field('maxAudioChars', '转写文本上限（字）', value('maxAudioChars'), change, 'number'),
         el(
           'div',
           { style: { display: 'flex', gap: 8, marginTop: 12 } },

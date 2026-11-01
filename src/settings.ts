@@ -20,6 +20,10 @@ export interface SettingsPatch {
   audioApiKey?: string
   routePolicy?: 'auto' | 'local-first' | 'cloud-first'
   allowPrivateUrls?: boolean
+  /** Cap for text extracted from a page. */
+  maxFetchChars?: number
+  /** Cap for a transcript handed back to the model. */
+  maxAudioChars?: number
 }
 
 const EDITABLE: (keyof SettingsPatch)[] = [
@@ -31,7 +35,13 @@ const EDITABLE: (keyof SettingsPatch)[] = [
   'audioApiKey',
   'routePolicy',
   'allowPrivateUrls',
+  'maxFetchChars',
+  'maxAudioChars',
 ]
+
+const NUMERIC: (keyof SettingsPatch)[] = ['maxFetchChars', 'maxAudioChars']
+const NUMERIC_MIN = 500
+const NUMERIC_MAX = 200_000
 
 /** Keep only known keys with the right primitive types. */
 export function sanitizePatch(raw: unknown): SettingsPatch {
@@ -40,6 +50,16 @@ export function sanitizePatch(raw: unknown): SettingsPatch {
   for (const key of EDITABLE) {
     const value = source[key]
     if (value === undefined || value === null) continue
+
+    if (NUMERIC.includes(key)) {
+      // 面板里是文本框，接受数字或数字字符串；越界与脏值直接丢弃
+      const parsed = typeof value === 'number' ? value : Number(String(value).trim())
+      if (!Number.isFinite(parsed)) continue
+      const clamped = Math.min(NUMERIC_MAX, Math.max(NUMERIC_MIN, Math.round(parsed)))
+      ;(out as Record<string, number>)[key] = clamped
+      continue
+    }
+
     if (typeof value !== 'string') continue
     ;(out as Record<string, string>)[key] = value.trim()
   }
@@ -104,6 +124,8 @@ export class SettingsStore {
       audioApiKeySet: this.config.audioApiKey.length > 0,
       routePolicy: this.config.routePolicy,
       allowPrivateUrls: this.config.allowPrivateUrls,
+      maxFetchChars: this.config.maxFetchChars,
+      maxAudioChars: this.config.maxAudioChars,
       triggerMode: this.config.triggerMode,
       autoCooldownMinutes: this.config.autoCooldownMinutes,
       source: this.file,

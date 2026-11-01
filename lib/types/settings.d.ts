@@ -9,6 +9,10 @@ export interface SettingsPatch {
     audioApiKey?: string;
     routePolicy?: 'auto' | 'local-first' | 'cloud-first';
     allowPrivateUrls?: boolean;
+    /** Cap for text extracted from a page. */
+    maxFetchChars?: number;
+    /** Cap for a transcript handed back to the model. */
+    maxAudioChars?: number;
 }
 /** Keep only known keys with the right primitive types. */
 export declare function sanitizePatch(raw: unknown): SettingsPatch;

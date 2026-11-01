@@ -49,6 +49,7 @@ dsh plugin --profile <profile> add https://codeload.github.com/ten-feng/dsh-adap
 
 - 看当前状态：GPU 名称 / 空闲显存、本地 OCR 与转写是否就绪、三个本地引擎装没装
 - 改云端视觉与音频的 Base URL、模型、API Key（输入框是密码型，已保存的只显示 `sk-w4••••9f2d` 这种掩码）
+- 改两个文本上限：`maxFetchChars`（网页正文）、`maxAudioChars`（转写文本），越界会被夹到 500~200000
 - 「重新探测」：立刻重跑一次硬件探测，不用等 10 秒去重窗口
 - 「保存」：写入 `<数据目录>/settings.json`，**立即生效**（改完不用重启）
 
